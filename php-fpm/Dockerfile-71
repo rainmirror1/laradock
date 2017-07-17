@@ -300,6 +300,16 @@ RUN if [ ${INSTALL_IMAGE_OPTIMIZERS} = true ]; then \
     apt-get install -y --force-yes jpegoptim optipng pngquant gifsicle \
 ;fi
 
+#####################################
+# BZip2:
+#####################################
+
+ARG INSTALL_BZ2=false
+RUN if [ ${INSTALL_BZ2} = true ]; then \
+    # Install the bz2 extension
+    docker-php-ext-install bz2 \
+;fi
+
 #
 #--------------------------------------------------------------------------
 # Final Touch
