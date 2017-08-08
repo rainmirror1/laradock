@@ -158,8 +158,7 @@ You might use the `--no-cache` option if you want full rebuilding (`docker-compo
 
 ## Speed up with docker-sync
 
-Docker for Mac is [slow](https://github.com/docker/for-mac/issues/77) due to poor performance when the application accesses files shared with the host machine. 
-One solution is to use [docker-sync](https://github.com/EugenMayer/docker-sync). 
+Docker on the Mac [is slow](https://github.com/docker/for-mac/issues/77), at the time of writing. Especially for larger projects, this can be a problem. The problem is [older than March 2016](https://forums.docker.com/t/file-access-in-mounted-volumes-extremely-slow-cpu-bound/8076) - as it's a such a long-running issue, we're including it in the docs here.
 
 In simple terms, docker-sync creates a docker container with a copy of all the application files that can be accessed very quickly from the other containers. 
 On the other hand, docker-sync runs a process on the host machine that continuously tracks and updates files changes from the host to this intermediate container.
@@ -394,9 +393,7 @@ It should be like this:
     ...
 ```
 
-2 - Re-build the containers `docker-compose build workspace php-fpm`
-
-3 - Open `laradock/workspace/xdebug.ini` and/or `laradock/php-fpm/xdebug.ini` and enable at least the following configurations:
+2 - Open `laradock/workspace/xdebug.ini` and `laradock/php-fpm/xdebug.ini` and enable at least the following configurations:
 
 ```
 xdebug.remote_autostart=1
@@ -404,11 +401,25 @@ xdebug.remote_enable=1
 xdebug.remote_connect_back=1
 ```
 
-For information on how to configure xDebug with your IDE and work it out, check this [Repository](https://github.com/LarryEitel/laravel-laradock-phpstorm).
+3 - Re-build the containers `docker-compose build workspace php-fpm`
+
+For information on how to configure xDebug with your IDE and work it out, check this [Repository](https://github.com/LarryEitel/laravel-laradock-phpstorm) or follow up on the next section if you use linux and PhpStorm.
 
 
+<a name="Setup remote debugging for PhpStorm on Linux"></a>
+## Setup remote debugging for PhpStorm on Linux
 
+ - Make sure you have followed the steps above in the [Install Xdebug section](http://laradock.io/documentation/#install-xdebug). 
 
+ - Make sure Xdebug accepts connections and listens on port 9000. (Should be default configuration).
+
+![Debug Configuration](/images/photos/PHPStorm/linux/configuration/debugConfiguration.png "Debug Configuration").
+
+ - Create a server with name `laradock` (matches **PHP_IDE_CONFIG** key in environment file) and make sure to map project root path with server correctly.
+
+![Server Configuration](/images/photos/PHPStorm/linux/configuration/serverConfiguration.png "Server Configuration").
+
+ - Start listening for debug connections, place a breakpoint and you are good to go !
 
 
 <br>
@@ -798,7 +809,7 @@ docker-compose up -d mariadb phpmyadmin
 1 - Run the Adminer Container (`adminer`) with the `docker-compose up` command. Example:
 
 ```bash
-docker-compose up -d adminer  
+docker-compose up -d adminer
 ```
 
 2 - Open your browser and visit the localhost on port **8080**:  `http://localhost:8080`
@@ -1010,9 +1021,18 @@ To install CodeIgniter 3 on Laradock all you have to do is the following simple 
 3 - Re-build your PHP-FPM Container `docker-compose build php-fpm`.
 
 
+<a name="Install-Symfony"></a>
+## Install Symfony
 
+1 - Open the `.env` file and set `WORKSPACE_INSTALL_SYMFONY` to `true`. 
 
+2 - Run `docker-compose build workspace`, after the step above.
 
+3 - The NGINX sites include a default config file for your Symfony project `symfony.conf.example`, so edit it and make sure the `root` is pointing to your project `web` directory.
+
+4 - Run `docker-compose restart` if the container was already running, before the step above.
+
+5 - Visit `symfony.dev`
 
 <br>
 <a name="Misc"></a>
@@ -1081,6 +1101,26 @@ To change the default forwarded port for ssh:
 			- "2222:22" # Edit this line
     ...
 ```
+
+
+
+
+
+
+<br>
+<a name="Change-the-MySQL-Version"></a>
+## Change the (MySQL) Version
+By default **MySQL 8.0** is running.
+
+MySQL 8.0 is a development release.  You may prefer to use the latest stable version, or an even older release.  If you wish, you can change the MySQL image that is used.
+
+Open up your .env file and set the `MYSQL_VERSION` variable to the version you would like to install.
+
+```
+MYSQL_VERSION=5.7
+```
+
+Available versions are: 5.5, 5.6, 5.7, 8.0, or latest.  See https://store.docker.com/images/mysql for more information.
 
 
 
