@@ -23,6 +23,7 @@ services:
           - INSTALL_NODE=${WORKSPACE_INSTALL_NODE}
           - INSTALL_YARN=${WORKSPACE_INSTALL_YARN}
           - INSTALL_DRUSH=${WORKSPACE_INSTALL_DRUSH}
+          - INSTALL_DRUPAL_CONSOLE=${WORKSPACE_INSTALL_DRUPAL_CONSOLE}
           - INSTALL_AEROSPIKE=${WORKSPACE_INSTALL_AEROSPIKE}
           - INSTALL_V8JS=${WORKSPACE_INSTALL_V8JS}
           - COMPOSER_GLOBAL_INSTALL=${WORKSPACE_COMPOSER_GLOBAL_INSTALL}
@@ -100,6 +101,7 @@ services:
     php-worker:
       build:
         context: ./php-worker
+        dockerfile: "Dockerfile-${PHP_VERSION}"
       volumes_from:
         - applications
       depends_on:
@@ -211,6 +213,7 @@ services:
         - ${MYSQL_ENTRYPOINT_INITDB}:/docker-entrypoint-initdb.d
       ports:
         - "${MYSQL_PORT}:3306"
+      user: "1000:50"
       networks:
         - backend
 
@@ -338,7 +341,7 @@ services:
       volumes:
         - ${DATA_SAVE_PATH}/redis:/data
       ports:
-        - "6379:6379"
+        - "${REDIS_PORT}:6379"
       networks:
         - backend
 
@@ -468,11 +471,14 @@ services:
       build: ./pgadmin
       ports:
         - "5050:5050"
+      volumes:
+        - ${DATA_SAVE_PATH}/pgadmin-backup:/var/lib/pgadmin4/data/storage/pgadmin4
       depends_on:
         - postgres
       networks:
         - frontend
         - backend
+
 
 ### ElasticSearch Container #################################
 
