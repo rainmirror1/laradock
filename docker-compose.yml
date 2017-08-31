@@ -8,6 +8,7 @@ services:
       image: tianon/true
       volumes:
         - ${APPLICATION}:/var/www
+      container_name: "applications_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Workspace Utilities Container ###########################
 
@@ -32,6 +33,8 @@ services:
           - INSTALL_DEPLOYER=${WORKSPACE_INSTALL_DEPLOYER}
           - INSTALL_LINUXBREW=${WORKSPACE_INSTALL_LINUXBREW}
           - INSTALL_MC=${WORKSPACE_INSTALL_MC}
+          - INSTALL_SYMFONY=${WORKSPACE_INSTALL_SYMFONY}
+          - INSTALL_PYTHON=${WORKSPACE_INSTALL_PYTHON}
           - INSTALL_IMAGE_OPTIMIZERS=${WORKSPACE_INSTALL_IMAGE_OPTIMIZERS}
           - PUID=${WORKSPACE_PUID}
           - PGID=${WORKSPACE_PGID}
@@ -51,6 +54,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "workspace_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### PHP-FPM Container #######################################
 
@@ -78,6 +82,7 @@ services:
           - INSTALL_SWOOLE=${PHP_FPM_INSTALL_SWOOLE}
           - INSTALL_IMAGE_OPTIMIZERS=${PHP_FPM_INSTALL_IMAGE_OPTIMIZERS}
           - INSTALL_BZ2=${PHP_FPM_INSTALL_BZ2}
+          - PUID=${WORKSPACE_PUID}
         dockerfile: "Dockerfile-${PHP_VERSION}"
       volumes_from:
         - applications
@@ -93,6 +98,7 @@ services:
         - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
       networks:
         - backend
+      container_name: "php-fpm_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### PHP Worker Container #####################################
 
@@ -107,14 +113,16 @@ services:
         - "dockerhost:${DOCKER_HOST_IP}"
       networks:
         - backend
+      container_name: "php-worker_${WORKSPACE_PUID}_${PHP_VERSION}"
 
-### Nginx Server Container ##################################
+### NGINX Server Container ##################################
 
     nginx:
       build:
         context: ./nginx
         args:
-          - PHP_UPSTREAM=php-fpm
+          - PHP_UPSTREAM_CONTAINER=${NGINX_PHP_UPSTREAM_CONTAINER}
+          - PHP_UPSTREAM_PORT=${NGINX_PHP_UPSTREAM_PORT}
       volumes_from:
         - applications
       volumes:
@@ -128,6 +136,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "nginx_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Blackfire Container #################################
 
@@ -140,6 +149,7 @@ services:
         - php-fpm
       networks:
         - backend
+      container_name: "blackfire_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Apache Server Container #################################
 
@@ -147,7 +157,10 @@ services:
       build:
         context: ./apache2
         args:
-          - PHP_SOCKET=${PHP_SOCKET}
+          - PHP_UPSTREAM_CONTAINER=${APACHE_PHP_UPSTREAM_CONTAINER}
+          - PHP_UPSTREAM_PORT=${APACHE_PHP_UPSTREAM_PORT}
+          - WEB_DOC_ROOT=${APACHE_WEB_DOC_ROOT}
+          - PUID=${WORKSPACE_PUID}
       volumes_from:
         - applications
       volumes:
@@ -161,6 +174,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "apache2_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### HHVM Container ##########################################
 
@@ -175,6 +189,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "hhvm_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Minio Container #########################################
 
@@ -189,12 +204,15 @@ services:
         - MINIO_SECRET_KEY=secretkey
       networks:
         - frontend
+      container_name: "minio_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### MySQL Container #########################################
 
     mysql:
       build:
         context: ./mysql
+        args:
+          - MYSQL_VERSION=${MYSQL_VERSION}
       environment:
         - MYSQL_DATABASE=${MYSQL_DATABASE}
         - MYSQL_USER=${MYSQL_USER}
@@ -208,6 +226,7 @@ services:
         - "${MYSQL_PORT}:3306"
       networks:
         - backend
+      container_name: "mysql_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Percona Container #########################################
 
@@ -226,6 +245,7 @@ services:
         - "${PERCONA_PORT}:3306"
       networks:
         - backend
+      container_name: "percona_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### MSSQL Container #########################################
 
@@ -242,6 +262,7 @@ services:
         - "${MSSQL_PORT}:1433"
       networks:
         - backend
+      container_name: "mssql_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### MariaDB Container #######################################
 
@@ -259,6 +280,7 @@ services:
         - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       networks:
         - backend
+      container_name: "mariadb_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### PostgreSQL Container ####################################
 
@@ -274,6 +296,7 @@ services:
         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       networks:
         - backend
+      container_name: "postgres_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### PostgreSQL PostGis Container ############################
 
@@ -289,6 +312,7 @@ services:
         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       networks:
         - backend
+      container_name: "postgres-postgis_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Neo4j Container #########################################
 
@@ -303,6 +327,7 @@ services:
         - ${DATA_SAVE_PATH}/neo4j:/var/lib/neo4j/data
       networks:
         - backend
+      container_name: "neo4j_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### MongoDB Container #######################################
 
@@ -314,6 +339,7 @@ services:
         - ${DATA_SAVE_PATH}/mongo:/data/db
       networks:
         - backend
+      container_name: "mongo_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### RethinkDB Container #######################################
 
@@ -325,6 +351,7 @@ services:
         - ${DATA_SAVE_PATH}/rethinkdb:/data/rethinkdb_data
       networks:
         - backend
+      container_name: "rethinkdb_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Redis Container #########################################
 
@@ -336,6 +363,7 @@ services:
         - "6379:6379"
       networks:
         - backend
+      container_name: "redis_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Aerospike c Container ###################################
 
@@ -352,6 +380,7 @@ services:
         - "${AEROSPIKE_INFO_PORT}:3003"
       networks:
         - backend
+      container_name: "aerospike_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Memcached Container #####################################
 
@@ -365,6 +394,7 @@ services:
         - php-fpm
       networks:
         - backend
+      container_name: "memcached_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Beanstalkd Container ####################################
 
@@ -377,6 +407,7 @@ services:
         - php-fpm
       networks:
         - backend
+      container_name: "beanstalkd_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### RabbitMQ Container ######################################
 
@@ -394,6 +425,7 @@ services:
         - php-fpm
       networks:
         - backend
+      container_name: "rabbitmq_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Beanstalkd Console Container ############################
 
@@ -405,6 +437,7 @@ services:
         - beanstalkd
       networks:
         - backend
+      container_name: "beanstalkd-console_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Caddy Server Container ##################################
 
@@ -424,6 +457,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "caddy_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### phpMyAdmin Container ####################################
 
@@ -441,6 +475,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "phpmyadmin_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Adminer Container ####################################
 
@@ -456,6 +491,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "adminer_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### pgAdmin Container #######################################
 
@@ -468,6 +504,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "pgadmin_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### ElasticSearch Container #################################
 
@@ -493,7 +530,7 @@ services:
       networks:
         - frontend
         - backend
-
+      container_name: "elasticsearch_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Kibana Container #######################################
 
@@ -506,6 +543,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "kibana_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Certbot Container ##################################
 
@@ -520,6 +558,7 @@ services:
         - EMAIL="fake.email@gmail.com"
       networks:
         - frontend
+      container_name: "certbot_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Mailhog Container #########################################
 
@@ -531,6 +570,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "mailhog_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Selenium Container ########################################
 
@@ -542,6 +582,7 @@ services:
         - /dev/shm:/dev/shm
       networks:
         - frontend
+      container_name: "selenium_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Varnish Proxy 1 ##########################################
 
@@ -561,6 +602,7 @@ services:
         - workspace
       networks:
         - frontend
+      container_name: "proxy_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Varnish Proxy 2 ##########################################
 
@@ -580,6 +622,7 @@ services:
         - workspace
       networks:
         - frontend
+      container_name: "proxy2_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Balancer Haproxy ##########################################
 
@@ -592,6 +635,7 @@ services:
       links:
         - proxy
         - proxy2
+      container_name: "balancer_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Jenkins ###################################################
 
@@ -609,6 +653,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "jenkins_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Laravel Echo Server #######################################
     laravel-echo-server:
@@ -623,6 +668,7 @@ services:
       networks:
         - frontend
         - backend
+      container_name: "laravel-echo-server_${WORKSPACE_PUID}_${PHP_VERSION}"
 
 ### Networks Setup ############################################
 

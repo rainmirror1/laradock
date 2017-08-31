@@ -304,7 +304,9 @@ ADD ./laravel.pool.conf /usr/local/etc/php-fpm.d/
 
 #RUN rm -r /var/lib/apt/lists/*
 
-RUN usermod -u 1000 www-data
+ARG PUID=1000
+ENV PUID ${PUID}
+RUN usermod -u ${PUID} www-data
 
 WORKDIR /var/www
 
