@@ -88,6 +88,7 @@ services:
         - applications
       volumes:
         - ./php-fpm/php${PHP_VERSION}.ini:/usr/local/etc/php/php.ini
+        - ${PHP_FPM_HOST_LOG_PATH}:/var/log/php
       expose:
         - "9000"
       depends_on:
@@ -96,6 +97,7 @@ services:
         - "dockerhost:${DOCKER_HOST_IP}"
       environment:
         - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+        - "PHP_LOG_PATH=/var/log/php"
       networks:
         - backend
       container_name: "php-fpm_${WORKSPACE_PUID}_${PHP_VERSION}"
