@@ -32,10 +32,10 @@ CMD ["supervisord"]
 #####################################
 USER root
 
-ARG INSTALL_NGROK=false
+ARG NGROK_INSTALL=false
 ARG NGROK_AUTH_TOKEN
 
-ENV INSTALL_NGROK ${INSTALL_NGROK}
+ENV INSTALL_NGROK ${NGROK_INSTALL}
 ENV NGROK_AUTH_TOKEN ${NGROK_AUTH_TOKEN}
 
 RUN if [ ${INSTALL_NGROK} = true ]; then \
