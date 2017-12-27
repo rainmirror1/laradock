@@ -88,7 +88,6 @@ WORKSPACE_INSTALL_IMAGEMAGICK=false
 WORKSPACE_INSTALL_TERRAFORM=false
 WORKSPACE_INSTALL_DUSK_DEPS=false
 WORKSPACE_INSTALL_PG_CLIENT=false
-WORKSPACE_INSTALL_NGROK=false
 WORKSPACE_PUID=1000
 WORKSPACE_PGID=1000
 WORKSPACE_CHROME_DRIVER_VERSION=2.32
@@ -333,5 +332,11 @@ LARAVEL_ECHO_SERVER_PORT=6001
 # linux: docker-sync not required
 
 DOCKER_SYNC_STRATEGY=native_osx
+
+### NGROK ##############################################################################################################
+
+NGROK_INSTALL=true
+NGROK_AUTH_TOKEN=
+NGROK_HOST_API_PORT=40401
 
 ########################################################################################################################
