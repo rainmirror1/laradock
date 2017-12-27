@@ -171,8 +171,8 @@ services:
           - PHP_UPSTREAM_TIMEOUT=${APACHE_PHP_UPSTREAM_TIMEOUT}
           - WEB_DOC_ROOT=${APACHE_WEB_DOC_ROOT}
           - PUID=${WORKSPACE_PUID}
-          - NGROK_INSTALL=${NGROK_INSTALL}
-          - NGROK_AUTH_TOKEN=${NGROK_AUTH_TOKEN}
+          - NGROK_INSTALL=${APACHE_NGROK_INSTALL}
+          - NGROK_AUTH_TOKEN=${APACHE_NGROK_AUTH_TOKEN}
       volumes_from:
         - applications
       volumes:
@@ -181,7 +181,7 @@ services:
       ports:
         - "${APACHE_HOST_HTTP_PORT}:80"
         - "${APACHE_HOST_HTTPS_PORT}:443"
-        - "${NGROK_HOST_API_PORT}:4040"
+        - "${APACHE_NGROK_HOST_API_PORT}:4040"
       depends_on:
         - php-fpm
       networks:
