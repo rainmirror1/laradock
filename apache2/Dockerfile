@@ -42,6 +42,6 @@ RUN if [ ${INSTALL_NGROK} = true ]; then \
     && unzip ngrok-stable-linux-amd64.zip \
     && mv ngrok /usr/local/bin/ \
     && rm -f ngrok-stable-linux-amd64.zip \
-    && ngrok authtoken ${NGROK_AUTH_TOKEN}
+    && ngrok authtoken ${NGROK_AUTH_TOKEN} \
     && ngrok http 80 > /dev/null & \
 ;fi
