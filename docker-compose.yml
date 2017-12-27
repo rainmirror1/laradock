@@ -171,7 +171,7 @@ services:
           - PHP_UPSTREAM_TIMEOUT=${APACHE_PHP_UPSTREAM_TIMEOUT}
           - WEB_DOC_ROOT=${APACHE_WEB_DOC_ROOT}
           - PUID=${WORKSPACE_PUID}
-          - INSTALL_NGROK=${NGROK_INSTALL}
+          - NGROK_INSTALL=${NGROK_INSTALL}
           - NGROK_AUTH_TOKEN=${NGROK_AUTH_TOKEN}
       volumes_from:
         - applications

@@ -35,10 +35,10 @@ USER root
 ARG NGROK_INSTALL=false
 ARG NGROK_AUTH_TOKEN
 
-ENV INSTALL_NGROK ${NGROK_INSTALL}
+ENV NGROK_INSTALL ${NGROK_INSTALL}
 ENV NGROK_AUTH_TOKEN ${NGROK_AUTH_TOKEN}
 
-RUN if [ ${INSTALL_NGROK} = true ]; then \
+RUN if [ ${NGROK_INSTALL} = true ]; then \
     apt-get update \
     && apt-get -y install zip wget unzip \
     && wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip \
