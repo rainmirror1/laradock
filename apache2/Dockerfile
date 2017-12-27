@@ -34,6 +34,7 @@ USER root
 
 ARG INSTALL_NGROK=false
 ENV INSTALL_NGROK ${INSTALL_NGROK}
+ENV NGROK_AUTH_TOKEN ${NGROK_AUTH_TOKEN}
 
 RUN if [ ${INSTALL_NGROK} = true ]; then \
     apt-get update \
@@ -43,5 +44,5 @@ RUN if [ ${INSTALL_NGROK} = true ]; then \
     && mv ngrok /usr/local/bin/ \
     && rm -f ngrok-stable-linux-amd64.zip \
     && ngrok authtoken ${NGROK_AUTH_TOKEN} \
-    && ngrok http 80 > /dev/null &
+    && ngrok http 80 > /dev/null & \
 fi
