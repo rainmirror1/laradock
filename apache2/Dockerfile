@@ -26,25 +26,3 @@ COPY vhost.conf /etc/apache2/sites-enabled/vhost.conf
 ENTRYPOINT ["/opt/docker/bin/entrypoint.sh"]
 
 CMD ["supervisord"]
-
-#####################################
-# ngrok:
-#####################################
-USER root
-
-ARG NGROK_INSTALL=false
-ARG NGROK_AUTH_TOKEN
-
-ENV NGROK_INSTALL=${NGROK_INSTALL}
-ENV NGROK_AUTH_TOKEN=${NGROK_AUTH_TOKEN}
-
-RUN if [ ${NGROK_INSTALL} = true ]; then \
-    apt-get update \
-    && apt-get -y install zip wget unzip \
-    && wget https://bin.equinox.io/c/4VmDzA7iaHb/ngrok-stable-linux-amd64.zip \
-    && unzip ngrok-stable-linux-amd64.zip \
-    && mv ngrok /usr/local/bin/ \
-    && rm -f ngrok-stable-linux-amd64.zip \
-    && ngrok authtoken ${NGROK_AUTH_TOKEN} \
-    && ngrok http 80 > /dev/null & \
-fi

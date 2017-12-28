@@ -690,6 +690,29 @@ services:
       depends_on:
         - workspace
       tty: true
+      
+### ngrok Apache Server Container #################################
+
+    ngrok-apache2:
+      image: wernight/ngrok
+      environment:
+        - NGROK_AUTH=${NGROK_APACHE_AUTH}
+        - NGROK_SUBDOMAIN=${NGROK_APACHE_SUBDOMAIN}
+        - NGROK_HOSTNAME=${NGROK_APACHE_HOSTNAME}
+        - NGROK_USERNAME=${NGROK_APACHE_USERNAME}
+        - NGROK_PASSWORD=${NGROK_APACHE_PASSWORD}
+        - NGROK_PROTOCOL=${NGROK_APACHE_PROTOCOL}
+        - NGROK_PORT=${NGROK_APACHE_PORT}
+        - NGROK_REGION=${NGROK_APACHE_REGION}
+      depends_on:
+        - apache2
+      links:
+        - "apache2:http"
+      ports:
+        - "${NGROK_APACHE_API_PORT}:4040"
+      networks:
+        - frontend
+        - backend
 
 ### Networks Setup ############################################
 
