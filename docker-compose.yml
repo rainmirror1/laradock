@@ -691,7 +691,8 @@ services:
 ### ngrok Apache Server Container #################################
 
     ngrok-apache2:
-      image: wernight/ngrok
+      build:
+        context: ./ngrok
       environment:
         - NGROK_AUTH=${NGROK_APACHE_AUTH}
         - NGROK_SUBDOMAIN=${NGROK_APACHE_SUBDOMAIN}
