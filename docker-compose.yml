@@ -712,6 +712,23 @@ services:
         - frontend
         - backend
 
+### ngrok Workspace SSH Container #################################
+
+    ngrok-ssh:
+      build:
+        context: ./ngrok-ssh
+      environment:
+        - NGROK_AUTH=${NGROK_SSH_AUTH}
+        - NGROK_REMOTE_ADDR=${NGROK_SSH_REMOTE_ADDR}
+        - NGROK_REGION=${NGROK_SSH_REGION}
+      depends_on:
+        - workspace
+      ports:
+        - "${NGROK_SSH_API_PORT}:4040"
+      networks:
+        - frontend
+        - backend
+
 ### Networks Setup ############################################
 
 networks:

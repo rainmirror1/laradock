@@ -337,6 +337,13 @@ NGROK_APACHE_PORT=80
 NGROK_APACHE_REGION=
 NGROK_APACHE_API_PORT=4040
 
+### NGROK FOR WORKSPACE SSH ################################################################################################
+
+NGROK_SSH_AUTH=
+NGROK_SSH_REMOTE_ADDR=
+NGROK_SSH_REGION=
+NGROK_SSH_API_PORT=4040
+
 ### DOCKER-SYNC ################################################################################################
 
 # osx: 'native_osx' (default)
