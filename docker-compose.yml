@@ -702,29 +702,17 @@ services:
         - NGROK_PROTOCOL=${NGROK_APACHE_PROTOCOL}
         - NGROK_PORT=${NGROK_APACHE_PORT}
         - NGROK_REGION=${NGROK_APACHE_REGION}
+        - NGROK_SSH=${NGROK_WORKSPACE_SSH}
+        - NGROK_SSH_PORT=${NGROK_WORKSPACE_SSH_PORT}
+        - NGROK_SSH_REMOTE_ADDR=${NGROK_WORKSPACE_SSH_REMOTE_ADDR}
+        
       depends_on:
+        - workspace
         - apache2
       links:
         - "apache2:http"
       ports:
         - "${NGROK_APACHE_API_PORT}:4040"
-      networks:
-        - frontend
-        - backend
-
-### ngrok Workspace SSH Container #################################
-
-    ngrok-ssh:
-      build:
-        context: ./ngrok-ssh
-      environment:
-        - NGROK_AUTH=${NGROK_SSH_AUTH}
-        - NGROK_REMOTE_ADDR=${NGROK_SSH_REMOTE_ADDR}
-        - NGROK_REGION=${NGROK_SSH_REGION}
-      depends_on:
-        - workspace
-      ports:
-        - "${NGROK_SSH_API_PORT}:4040"
       networks:
         - frontend
         - backend
