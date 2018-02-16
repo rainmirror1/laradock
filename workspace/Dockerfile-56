@@ -58,7 +58,7 @@ ENV USER_NAME ${USER_NAME}
 ENV GROUP_NAME ${GROUP_NAME}
 
 RUN groupadd -g ${PGID} ${GROUP_NAME} && \
-    useradd -u ${PUID} -g ${GROUP_NAME} -m ${USER_NAME} && \
+    adduser --gecos "" --disabled-password --uid ${PUID} --gid ${PGID} ${USER_NAME} && \
     apt-get update -yqq
 
 #####################################
@@ -210,10 +210,24 @@ RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
     cat /tmp/id_rsa.pub >> /root/.ssh/authorized_keys \
         && cat /tmp/id_rsa.pub >> /root/.ssh/id_rsa.pub \
         && cat /tmp/id_rsa >> /root/.ssh/id_rsa \
-        && rm -f /tmp/id_rsa* \
         && chmod 644 /root/.ssh/authorized_keys /root/.ssh/id_rsa.pub \
     && chmod 400 /root/.ssh/id_rsa \
+    && echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config \
 ;fi
+
+USER ${USER_NAME}
+RUN if [ ${INSTALL_WORKSPACE_SSH} = true ]; then \
+    mkdir /home/${USER_NAME}/.ssh \
+        && chmod -R 700 /home/${USER_NAME}/.ssh && \
+    cat /tmp/id_rsa.pub >> /home/${USER_NAME}/.ssh/authorized_keys \
+        && cat /tmp/id_rsa.pub >> /home/${USER_NAME}/.ssh/id_rsa.pub \
+        && cat /tmp/id_rsa >> /home/${USER_NAME}/.ssh/id_rsa \
+        && chmod 644 /home/${USER_NAME}/.ssh/authorized_keys /home/${USER_NAME}/.ssh/id_rsa.pub \
+    && chmod 400 /home/${USER_NAME}/.ssh/id_rsa \
+;fi
+
+USER root
+RUN rm -f /tmp/id_rsa*
 
 #####################################
 # MongoDB:
@@ -576,6 +590,8 @@ RUN if [ ${INSTALL_PG_CLIENT} = true ]; then \
 # Dusk Dependencies:
 #####################################
 USER root
+ARG CHROME_DRIVER_VERSION=stable
+ENV CHROME_DRIVER_VERSION ${CHROME_DRIVER_VERSION}
 ARG INSTALL_DUSK_DEPS=false
 ENV INSTALL_DUSK_DEPS ${INSTALL_DUSK_DEPS}
 RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
@@ -595,7 +611,7 @@ RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
   && rm google-chrome-stable_current_amd64.deb \
 
   # Install Chrome Driver
-  && wget https://chromedriver.storage.googleapis.com/2.31/chromedriver_linux64.zip \
+  && wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip \
   && unzip chromedriver_linux64.zip \
   && mv chromedriver /usr/local/bin/ \
   && rm chromedriver_linux64.zip \
