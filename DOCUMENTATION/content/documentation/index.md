@@ -818,6 +818,8 @@ docker-compose up -d beanstalkd-console
 
 2 - Open your browser and visit `http://localhost:2080/`
 
+_Note: You can customize the port on which beanstalkd console is listening by changing `BEANSTALKD_CONSOLE_HOST_PORT` in `.env`. The default value is *2080*._
+
 3 - Add the server
 
 - Host: beanstalkd
@@ -1729,3 +1731,13 @@ This error sometimes happens because your Laravel application isn't running on t
 ## I get stuck when building nginx on `fetch http://mirrors.aliyun.com/alpine/v3.5/main/x86_64/APKINDEX.tar.gz`
 
 As stated on [#749](https://github.com/laradock/laradock/issues/749#issuecomment-293296687), removing the line `RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/' /etc/apk/repositories` from `nginx/Dockerfile` solves the problem.		
+
+## Custom composer repo packagist url and npm registry url
+
+In China, the origin source of composer and npm is very slow. You can add `WORKSPACE_NPM_REGISTRY` and `WORKSPACE_COMPOSER_REPO_PACKAGIST` config in `.env` to use your custom source.
+
+Example:
+```bash
+WORKSPACE_NPM_REGISTRY=https://registry.npm.taobao.org
+WORKSPACE_COMPOSER_REPO_PACKAGIST=https://packagist.phpcomposer.com
+```

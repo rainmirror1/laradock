@@ -130,6 +130,13 @@ RUN if [ ${COMPOSER_GLOBAL_INSTALL} = true ]; then \
     composer global install \
 ;fi
 
+ARG COMPOSER_REPO_PACKAGIST
+ENV COMPOSER_REPO_PACKAGIST ${COMPOSER_REPO_PACKAGIST}
+
+RUN if [ ${COMPOSER_REPO_PACKAGIST} ]; then \
+    composer config -g repo.packagist composer ${COMPOSER_REPO_PACKAGIST} \
+;fi
+
 #####################################
 # Crontab
 #####################################
@@ -237,6 +244,21 @@ RUN if [ ${INSTALL_MONGO} = true ]; then \
     pecl -q install mongodb && \
     echo "extension=mongodb.so" >> /etc/php/7.1/mods-available/mongodb.ini && \
     ln -s /etc/php/7.1/mods-available/mongodb.ini /etc/php/7.1/cli/conf.d/30-mongodb.ini \
+#####################################
+;fi
+
+# AMQP:
+#####################################
+
+# Check if Mongo needs to be installed
+ARG INSTALL_AMQP=false
+ENV INSTALL_AMQP ${INSTALL_AMQP}
+RUN if [ ${INSTALL_AMQP} = true ]; then \
+    apt-get install librabbitmq-dev -y && \
+    # Install the mongodb extension
+    pecl -q install amqp && \
+    echo "extension=amqp.so" >> /etc/php/7.1/mods-available/amqp.ini && \
+    ln -s /etc/php/7.1/mods-available/amqp.ini /etc/php/7.1/cli/conf.d/30-amqp.ini \
 ;fi
 
 #####################################
@@ -250,6 +272,18 @@ RUN if [ ${INSTALL_PHPREDIS} = true ]; then \
     printf "\n" | pecl -q install -o -f redis && \
     echo "extension=redis.so" >> /etc/php/7.1/mods-available/redis.ini && \
     phpenmod redis \
+;fi
+
+#####################################
+# Swoole EXTENSION FOR PHP 7
+#####################################
+
+ARG INSTALL_SWOOLE=false
+RUN if [ ${INSTALL_SWOOLE} = true ]; then \
+    # Install Php Swoole Extension
+    pecl -q install swoole && \
+    echo "extension=swoole.so" >> /etc/php/7.1/mods-available/swoole.ini && \
+    ln -s /etc/php/7.1/mods-available/swoole.ini /etc/php/7.1/cli/conf.d/20-swoole.ini \
 ;fi
 
 #####################################
@@ -293,14 +327,19 @@ ARG NODE_VERSION=stable
 ENV NODE_VERSION ${NODE_VERSION}
 ARG INSTALL_NODE=false
 ENV INSTALL_NODE ${INSTALL_NODE}
+ARG NPM_REGISTRY
+ENV NPM_REGISTRY ${NPM_REGISTRY}
 ENV NVM_DIR /home/${USER_NAME}/.nvm
 RUN if [ ${INSTALL_NODE} = true ]; then \
     # Install nvm (A Node Version Manager)
-    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.1/install.sh | bash && \
+    curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash && \
         . $NVM_DIR/nvm.sh && \
         nvm install ${NODE_VERSION} && \
         nvm use ${NODE_VERSION} && \
         nvm alias ${NODE_VERSION} && \
+        if [ ${NPM_REGISTRY} ]; then \
+        npm config set registry ${NPM_REGISTRY} \
+        ;fi && \
         npm install -g gulp bower vue-cli \
 ;fi
 
@@ -324,6 +363,9 @@ RUN if [ ${INSTALL_NODE} = true ]; then \
 # Add PATH for node
 ENV PATH $PATH:$NVM_DIR/versions/node/v${NODE_VERSION}/bin
 
+RUN if [ ${NPM_REGISTRY} ]; then \
+    . ~/.bashrc && npm config set registry ${NPM_REGISTRY} \
+;fi
 
 #####################################
 # YARN:
@@ -401,7 +443,7 @@ RUN if [ ${INSTALL_V8JS} = true ]; then \
     # Install the php V8JS extension
     add-apt-repository -y ppa:pinepain/libv8-5.4 \
     && apt-get update -yqq \
-    && apt-get install -y php-xml php-dev php-pear libv8-5.4 \
+    && apt-get install -y php7.1-xml php7.1-dev php-pear libv8-5.4 \
     && pecl install v8js \
     && echo "extension=v8js.so" >> /etc/php/7.1/cli/php.ini \
 ;fi
@@ -419,6 +461,11 @@ RUN echo "" >> ~/.bashrc && \
 #####################################
 # Laravel Envoy:
 #####################################
+USER root
+
+RUN apt-get update -yqq \
+    && apt-get install -y php-curl
+
 USER ${USER_NAME}
 
 ARG INSTALL_LARAVEL_ENVOY=false
@@ -433,6 +480,13 @@ RUN if [ ${INSTALL_LARAVEL_ENVOY} = true ]; then \
 # Laravel Installer:
 #####################################
 USER root
+
+ARG COMPOSER_REPO_PACKAGIST
+ENV COMPOSER_REPO_PACKAGIST ${COMPOSER_REPO_PACKAGIST}
+
+RUN if [ ${COMPOSER_REPO_PACKAGIST} ]; then \
+    composer config -g repo.packagist composer ${COMPOSER_REPO_PACKAGIST} \
+;fi
 
 ARG INSTALL_LARAVEL_INSTALLER=false
 ENV INSTALL_LARAVEL_INSTALLER ${INSTALL_LARAVEL_INSTALLER}
@@ -449,14 +503,31 @@ USER ${USER_NAME}
 #####################################
 # Deployer:
 #####################################
-USER ${USER_NAME}
+USER root
 
 ARG INSTALL_DEPLOYER=false
 ENV INSTALL_DEPLOYER ${INSTALL_DEPLOYER}
 
 RUN if [ ${INSTALL_DEPLOYER} = true ]; then \
     # Install the Deployer
-    composer global require "deployer/deployer" \
+    # Using Phar as currently there is no support for laravel 4 from composer version
+    # Waiting to be resolved on https://github.com/deployphp/deployer/issues/1552
+    curl -LO https://deployer.org/deployer.phar && \
+    mv deployer.phar /usr/local/bin/dep && \
+    chmod +x /usr/local/bin/dep \
+;fi
+
+#####################################
+# Prestissimo:
+#####################################
+USER ${USER_NAME}
+
+ARG INSTALL_PRESTISSIMO=false
+ENV INSTALL_PRESTISSIMO ${INSTALL_PRESTISSIMO}
+
+RUN if [ ${INSTALL_PRESTISSIMO} = true ]; then \
+    # Install Prestissimo
+    composer global require "hirak/prestissimo" \
 ;fi
 
 #####################################
@@ -695,6 +766,12 @@ RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
   && mv chromedriver /usr/local/bin/ \
   && rm chromedriver_linux64.zip \
 ;fi
+
+#####################################
+# Check PHP version:
+#####################################
+
+RUN php -v | head -n 1 | grep -q "PHP 7.1."
 
 #
 #--------------------------------------------------------------------------
