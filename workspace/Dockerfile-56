@@ -689,7 +689,7 @@ ENV INSTALL_PYTHON2 ${INSTALL_PYTHON2}
 RUN if [ ${INSTALL_PYTHON2} = true ]; then \
 
     # Install Python2.7
-    add-apt-repository -y ppa:fkrull/deadsnakes && \
+    add-apt-repository -y ppa:jonathonf/python-2.7 && \
     apt-get update -y && \
     apt-get install -y python2.7 && \
 
