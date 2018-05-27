@@ -215,53 +215,30 @@ The PHP-CLI extensions should be installed in `workspace/Dockerfile`.
 <br>
 <a name="Change-the-PHP-FPM-Version"></a>
 ## Change the (PHP-FPM) Version
-By default **PHP-FPM 7.0** is running.
+By default the latest stable PHP versin is configured to run.
 
 >The PHP-FPM is responsible of serving your application code, you don't have to change the PHP-CLI version if you are planning to run your application on different PHP-FPM version.
 
 
-### A) Switch from PHP `7.0` to PHP `5.6`
+### A) Switch from PHP `7.2` to PHP `5.6`
 
-1 - Open the `docker-compose.yml`.
+1 - Open the `.env`.
 
-2 - Search for `Dockerfile-70` in the PHP container section.
+2 - Search for `PHP_VERSION`.
 
-3 - Change the version number, by replacing `Dockerfile-70` with `Dockerfile-56`, like this:
+3 - Set the desired version number:
 
-```yml
-    php-fpm:
-        build:
-            context: ./php-fpm
-            dockerfile: Dockerfile-56
-    ...
+```dotenv
+PHP_VERSION=5.6
 ```
 
-4 - Finally rebuild the container
+4 - Finally rebuild the image
 
 ```bash
 docker-compose build php-fpm
 ```
 
 > For more details about the PHP base image, visit the [official PHP docker images](https://hub.docker.com/_/php/).
-
-
-### B) Switch from PHP `7.0` or `5.6` to PHP `5.5`
-
-We do not natively support PHP 5.5 anymore, but you can get it in few steps:
-
-1 - Clone `https://github.com/laradock/php-fpm`.
-
-3 - Rename `Dockerfile-56` to `Dockerfile-55`.
-
-3 - Edit the file `FROM php:5.6-fpm` to `FROM php:5.5-fpm`.
-
-4 - Build an image from `Dockerfile-55`.
-
-5 - Open the `docker-compose.yml` file.
-
-6 - Point `php-fpm` to your `Dockerfile-55` file.
-
-
 
 
 
@@ -273,11 +250,23 @@ By default **PHP-CLI 7.0** is running.
 
 >Note: it's not very essential to edit the PHP-CLI version. The PHP-CLI is only used for the Artisan Commands & Composer. It doesn't serve your Application code, this is the PHP-FPM job.
 
-The PHP-CLI is installed in the Workspace container. To change the PHP-CLI version you need to edit the `workspace/Dockerfile`.
+The PHP-CLI is installed in the Workspace container. To change the PHP-CLI version you need to simply change the `PHP_VERSION` in te .env file as follow:
 
-Right now you have to manually edit the `Dockerfile` or create a new one like it's done for the PHP-FPM. (consider contributing).
+1 - Open the `.env`.
 
+2 - Search for `PHP_VERSION`.
 
+3 - Set the desired version number:
+
+```dotenv
+PHP_VERSION=7.2
+```
+
+4 - Finally rebuild the image
+
+```bash
+docker-compose build workspace
+```
 
 
 
@@ -478,18 +467,14 @@ composer create-project laravel/laravel my-cool-app "5.2.*"
 For more about the Laravel installation click [here](https://laravel.com/docs/master#installing-laravel).
 
 
-3 - Edit `docker-compose.yml` to Map the new application path:
+3 - Edit `.env` to Map the new application path:
 
 By default, Laradock assumes the Laravel application is living in the parent directory of the laradock folder.
 
 Since the new Laravel application is in the `my-cool-app` folder, we need to replace `../:/var/www` with `../my-cool-app/:/var/www`, as follow:
 
-```yaml
-    application:
-		 image: tianon/true
-        volumes:
-            - ../my-cool-app/:/var/www
-    ...
+```dotenv
+  APP_CODE_PATH_HOST=../my-cool-app/
 ```
 4 - Go to that folder and start working..
 
@@ -562,7 +547,6 @@ b) add a new service container by simply copy-paste this section below PHP-FPM c
     php-worker:
       build:
         context: ./php-worker
-        dockerfile: "Dockerfile-${PHP_VERSION}" #Dockerfile-71 or #Dockerfile-70 available
         args:
           - INSTALL_PGSQL=${PHP_WORKER_INSTALL_PGSQL} #Optionally install PGSQL PHP drivers
       volumes_from:
@@ -770,6 +754,21 @@ docker-compose up -d adminer
 
 
 
+<br>
+<a name="Use-Portainer"></a>
+## Use Portainer
+
+1 - Run the Portainer Container (`portainer`) with the `docker-compose up` command. Example:
+
+```bash
+docker-compose up -d portainer
+```
+
+2 - Open your browser and visit the localhost on port **9010**:  `http://localhost:9010`
+
+
+
+
 
 <br>
 <a name="Use-pgAdmin"></a>
@@ -844,7 +843,7 @@ docker-compose up -d elasticsearch
 
 2 - Open your browser and visit the localhost on port **9200**:  `http://localhost:9200`
 
-> The default username is `user` and the default password is `changeme`.
+> The default username is `elastic` and the default password is `changeme`.
 
 ### Install ElasticSearch Plugin
 
@@ -1074,6 +1073,8 @@ You can add your cron jobs to `workspace/crontab/root` after the `php artisan` l
 
 Make sure you [change the timezone](#Change-the-timezone) if you don't want to use the default (UTC).
 
+If you are on Windows, verify that the line endings for this file are LF only, otherwise the cron jobs will silently fail.
+
 
 
 
@@ -1094,7 +1095,18 @@ To change the default forwarded port for ssh:
     ...
 ```
 
+Then login using:
 
+```bash
+ssh -o PasswordAuthentication=no    \
+    -o StrictHostKeyChecking=no     \
+    -o UserKnownHostsFile=/dev/null \
+    -p 2222                         \
+    -i workspace/insecure_id_rsa    \
+    laradock@localhost
+```
+
+To login as root, replace laradock@locahost with root@localhost.
 
 <br>
 <a name="Change-the-MySQL-Version"></a>
@@ -1514,14 +1526,14 @@ Quick Setup giude, (we recommend you check their docs)
 You can use the d4m-nfs solution in 2 ways, one is using the Laradock built it integration, and the other is using the tool separatly. Below is show case of both methods:
 
 
-#### B.1: using the built in d4m-nfs integration
+### B.1: using the built in d4m-nfs integration
 
 In simple terms, docker-sync creates a docker container with a copy of all the application files that can be accessed very quickly from the other containers.
 On the other hand, docker-sync runs a process on the host machine that continuously tracks and updates files changes from the host to this intermediate container.
 
 Out of the box, it comes pre-configured for OS X, but using it on Windows is very easy to set-up by modifying the `DOCKER_SYNC_STRATEGY` on the `.env`
 
-##### Usage
+#### Usage
 
 Laradock comes with `sync.sh`, an optional bash script, that automates installing, running and stopping docker-sync.  Note that to run the bash script you may need to change the permissions `chmod 755 sync.sh`
 
@@ -1536,22 +1548,24 @@ Laradock comes with `sync.sh`, an optional bash script, that automates installin
 DOCKER_SYNC_STRATEGY=native_osx
 ```
 
-2) Install the docker-sync gem on the host-machine:
+3) set `APP_CODE_PATH_CONTAINER=/var/www` to `APP_CODE_PATH_CONTAINER=/var/www:nocopy` in the .env file
+
+4) Install the docker-sync gem on the host-machine:
 ```bash
 ./sync.sh install
 ```
-3) Start docker-sync and the Laradock environment.
+5) Start docker-sync and the Laradock environment.
 Specify the services you want to run, as you would normally do with `docker-compose up`
 ```bash
 ./sync.sh up nginx mysql
 ```
 Please note that the first time docker-sync runs, it will copy all the files to the intermediate container and that may take a very long time (15min+).
-4) To stop the environment and docker-sync do:
+6) To stop the environment and docker-sync do:
 ```bash
 ./sync.sh down
 ```
 
-##### Setting up Aliases (optional)
+#### Setting up Aliases (optional)
 
 You may create bash profile aliases to avoid having to remember and type these commands for everyday development.
 Add the following lines to your `~/.bash_profile`:
@@ -1565,7 +1579,7 @@ alias devdown="cd /PATH_TO_LARADOCK/laradock; ./sync.sh down"
 Now from any location on your machine, you can simply run `devup`, `devbash` and `devdown`.
 
 
-##### Additional Commands
+#### Additional Commands
 
 Opening bash on the workspace container (to run artisan for example):
  ```bash
@@ -1581,7 +1595,7 @@ Removing and cleaning up the files and the docker-sync container. Use only if yo
 ```
 
 
-##### Additional Notes
+#### Additional Notes
 
 - You may run laradock with or without docker-sync at any time using with the same `.env` and `docker-compose.yml`, because the configuration is overridden automatically when docker-sync is used.
 - You may inspect the `sync.sh` script to learn each of the commands and even add custom ones.
@@ -1598,7 +1612,7 @@ Visit the [docker-sync documentation](https://github.com/EugenMayer/docker-sync/
 
 <br>
 
-#### B.2: using the d4m-nfs tool
+### B.2: using the d4m-nfs tool
 
 [D4m-nfs](https://github.com/IFSight/d4m-nfs) automatically mount NFS volume instead of osxfs one.
 
