@@ -427,7 +427,7 @@ RUN if [ ${INSTALL_PHALCON} = true ]; then \
     && ./install \
     && cp ../tests/_ci/phalcon.ini $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') \
     && cd ../../ \
-    && rm -r cphalcon-${PHALCON_VERSION}
+    && rm -r cphalcon-${PHALCON_VERSION} \
 ;fi
 
 ###########################################################################
