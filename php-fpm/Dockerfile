@@ -422,7 +422,7 @@ ARG INSTALL_PHALCON=false
 
 RUN if [ ${INSTALL_PHALCON} = true ]; then \
     # Install Phalcon module
-    curl -s https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh | sudo bash
+    curl -s https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh | sudo bash \
     && apt-get update -yqq \
     && apt-get -y install php${PHP_VERSION}-phalcon \
 ;fi
