@@ -742,6 +742,21 @@ RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
 ;fi
 
 ###########################################################################
+# Phalcon
+###########################################################################
+
+USER root
+
+ARG INSTALL_PHALCON=false
+
+RUN if [ ${INSTALL_PHALCON} = true ]; then \
+    # Install Phalcon module
+    LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php -y \
+    && apt-get update -yqq \
+    && apt-get -y install php-phalcon \
+;fi
+
+###########################################################################
 # Check PHP version:
 ###########################################################################
 
