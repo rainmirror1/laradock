@@ -422,7 +422,7 @@ ARG INSTALL_PHALCON=false
 
 RUN if [ ${INSTALL_PHALCON} = true ]; then \
     # Install Phalcon module
-    apt-get install -y python-software-properties \
+    apt-get install -y software-properties-common \
     && LC_ALL=C.UTF-8 add-apt-repository ppa:ondrej/php -y \
     && apt-get update -yqq \
     && apt-get -y install php-phalcon \
