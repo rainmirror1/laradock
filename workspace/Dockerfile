@@ -748,12 +748,15 @@ RUN if [ ${INSTALL_DUSK_DEPS} = true ]; then \
 USER root
 
 ARG INSTALL_PHALCON=false
+ENV PHALCON_VERSION=${PHALCON_VERSION}
 
 RUN if [ ${INSTALL_PHALCON} = true ]; then \
-    # Install Phalcon module
-    curl -s https://packagecloud.io/install/repositories/phalcon/stable/script.deb.sh | bash \
-    && apt-get update -yqq \
-    && apt-get -y install php${PHP_VERSION}-phalcon \
+    curl -sSL "https://codeload.github.com/phalcon/cphalcon/tar.gz/v${PHALCON_VERSION}" | tar -xz \
+    && cd cphalcon-${PHALCON_VERSION}/build \
+    && ./install \
+    && cp ../tests/_ci/phalcon.ini $(php-config --configure-options | grep -o "with-config-file-scan-dir=\([^ ]*\)" | awk -F'=' '{print $2}') \
+    && cd ../../ \
+    && rm -r cphalcon-${PHALCON_VERSION}
 ;fi
 
 ###########################################################################
